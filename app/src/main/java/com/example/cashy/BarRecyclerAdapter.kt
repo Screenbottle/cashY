@@ -5,14 +5,13 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class BarRecyclerAdapter (val context: Context,
-                          val receipt: List<Receipt>): RecyclerView.Adapter<BarRecyclerAdapter.ViewHolder>(){
-    val layoutInflater = LayoutInflater.from(context)
+                          val receipt: List<Receipt>): RecyclerView.Adapter<BarRecyclerAdapter.ViewHolder>() {
+    private val layoutInflater: LayoutInflater = LayoutInflater.from(context)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val itemView= layoutInflater.inflate(R.layout.bar_layout,parent,false)
@@ -21,7 +20,8 @@ class BarRecyclerAdapter (val context: Context,
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val receipts= receipt[position]
-        when(receipts.category){
+        when(receipts.category) {
+            // this should done with resource strings instead, like what the warning suggests /arvid
             "1"-> holder.box1Txt.text="Jan"
             "2"-> holder.box1Txt.text="Feb"
             "3"-> holder.box1Txt.text="Mar"
@@ -45,24 +45,24 @@ class BarRecyclerAdapter (val context: Context,
     override fun getItemCount(): Int {
         return receipt.size
     }
-    inner class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView){
+
+    inner class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView) {
         var bar=itemView.findViewById<ProgressBar>(R.id.progressRvBar)
         var box1Txt=itemView.findViewById<TextView>(R.id.txtBar1)
         var box2Txt=itemView.findViewById<TextView>(R.id.txtBar2)
-
     }
-    fun getMaxValue():Int {
-        var listOfNumbers = mutableListOf<Int>()
+
+    private fun getMaxValue(): Int {
+        val listOfNumbers = mutableListOf<Int>()
         for (item in receipt) {
             listOfNumbers.add(item.sum!!)
         }
-        var maxValue = listOfNumbers.max()
-        return maxValue
+        return listOfNumbers.max()
     }
-    fun barCurrentProgress(progress: Int, view:ProgressBar){
-        val currentProgress= progress //valor actual
+
+    private fun barCurrentProgress(progress: Int, view:ProgressBar) {
         ObjectAnimator
-            .ofInt(view, "progress",currentProgress)
+            .ofInt(view, "progress", progress)
             .setDuration(2000)
             .start()
     }

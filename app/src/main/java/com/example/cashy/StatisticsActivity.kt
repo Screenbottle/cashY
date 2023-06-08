@@ -1,22 +1,19 @@
 package com.example.cashy
 
-import android.content.DialogInterface
-import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.SwitchCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.cashy.fragments.CategoryFragment
+import com.example.cashy.fragments.DatePickerFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -27,37 +24,32 @@ import com.google.firebase.ktx.Firebase
 
 class StatisticsActivity : AppCompatActivity() {
 
-    lateinit var addButton : FloatingActionButton
+    private lateinit var addButton : FloatingActionButton
 
-    lateinit var recyclerView: RecyclerView
-    lateinit var barRecyclerView: RecyclerView
-    //lateinit var switchBtn : SwitchCompat
-    lateinit var categoriesBtn: ImageButton //the 2 imgView that manage fragments
-    lateinit var removeFragBtn: ImageButton
-    lateinit var overviewBtn: ImageButton
-    lateinit var calendarBtn: ImageButton
-    lateinit var dailyBudget:TextView
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var barRecyclerView: RecyclerView
+    private lateinit var categoriesBtn: ImageButton //the 2 imgView that manage fragments
+    private lateinit var removeFragBtn: ImageButton
+    private lateinit var overviewBtn: ImageButton
+    private lateinit var calendarBtn: ImageButton
+    private lateinit var dailyBudget: TextView
 
     lateinit var auth: FirebaseAuth
-    lateinit var db: FirebaseFirestore
+    private lateinit var db: FirebaseFirestore
 
-    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_statistics)
         supportActionBar?.hide()
 
-        //switchBtn= findViewById(R.id.idSwitch)  //the 2 imgView that manage fragments
         categoriesBtn= findViewById(R.id.statistiks_iv)
         removeFragBtn= findViewById(R.id.remvFrag_iv)
         overviewBtn= findViewById(R.id.overview_imgBtn)
         calendarBtn= findViewById(R.id.calendarView)
-        //dailyBudget=findViewById(R.id.dailyBeditTxt)
 
         db= Firebase.firestore
         auth = Firebase.auth
 
-        //addDataTillUser()
 
         //links the RV-Layout with the View      // RV in Activity
         recyclerView=findViewById(R.id.categ_RV)
@@ -74,63 +66,43 @@ class StatisticsActivity : AppCompatActivity() {
 
         addButton = findViewById(R.id.floatingActionButton3)
         addButton.setOnClickListener {
-            val intent = Intent(this, AddReceipt::class.java)
+            val intent = Intent(this, AddReceiptActivity::class.java)
             startActivity(intent)
         }
 
-
-        /*    //Switch btn for Budget popup window
-        switchBtn.setOnClickListener{
-            if (switchBtn.isChecked){
-                //createBudgetDialog()
-                withEditText()
-                switchBtn.isChecked=false
-                Log.d("!!!", "${switchBtn.isChecked}")
-            }else{
-                Log.d("!!!", "${switchBtn.isChecked}")
-            }
-        }*/
         calendarBtn.setOnClickListener { showDatePickerDialog() }
-
     }
-    fun createBudgetDialog(){
-        var budgetAmmount=""
+
+    fun createBudgetDialog() {
+        var budgetAmount=""
         val budget= BudgetDialog()
-        budget.show(supportFragmentManager,"budget_dialog" )
-        dailyBudget.setText(budget.popUpBudget)
+        budget.show(supportFragmentManager,"budget_dialog")
+        dailyBudget.text = budget.popUpBudget
         Log.d("!!!","Budget in main: ${dailyBudget.text}")
     }
+
     fun withEditText() {
-        //dailyBudget.setText("")
         val builder = AlertDialog.Builder(this)
         val inflater = layoutInflater
         val dialogLayout = inflater.inflate(R.layout.budget_popup, null)
         val editText = dialogLayout.findViewById<EditText>(R.id.budgetET)
-        with(builder){
+
+        with(builder) {
             setTitle("Daily Budget.")
-            setPositiveButton("save"){dialog, which ->
+            setPositiveButton("save") { dialog, which ->
                 dailyBudget.text=editText.getText().toString()
                 Log.d("!!!","Budget is: $dailyBudget")
             }
-            setNegativeButton("cancel"){dialog, which ->
+            setNegativeButton("cancel") { dialog, which ->
 
             }
             setView(dialogLayout)
             show()
         }
-        /*builder.setTitle("Daily Budget.")
-        builder.setView(dialogLayout)
-        builder.setPositiveButton("save") { dialogInterface, i ->
-            dailyBudget.setText(editText.text.toString()+ " Kr")
-            Log.d("!!!","Budget is: $dailyBudget")
-            Toast.makeText(applicationContext, "Budget is " + editText.text.toString(),
-                Toast.LENGTH_SHORT).show()
-        }
-        builder.show()*/
-
     }
 
-    fun addCategoriesFragment(view: View){
+    // creates a fragment for the categories, and adds it to the container view /arvid
+    fun addCategoriesFragment(view: View) {
         val fm=supportFragmentManager.findFragmentByTag("categories_fragment")
         if(fm==null) {
             val categoriesFragment = CategoryFragment()
@@ -138,43 +110,49 @@ class StatisticsActivity : AppCompatActivity() {
             transaction.add(R.id.container, categoriesFragment, "categories_fragment")
             transaction.commit()
             Log.d("!!!", "fragment created")
-        }else{
+        }
+        else {
             Toast.makeText(this,"Checked",Toast.LENGTH_SHORT).show()
         }
-
     }
-    fun removeFragment(view: View){
+
+    // removes the fragments for categories and the calendar /arvid
+    fun removeFragment() {
         val categoriesFragment= supportFragmentManager.findFragmentByTag("categories_fragment")
         val calendarFragment=supportFragmentManager.findFragmentByTag("calendar_fragment")
-        if(categoriesFragment!=null){
+        if(categoriesFragment != null) {
             val transaction = supportFragmentManager.beginTransaction()
             transaction.remove(categoriesFragment)
             transaction.commit()
-        }else{
-            Toast.makeText(this,"Categories Fragment not found", Toast.LENGTH_SHORT).show()
         }
-        if(calendarFragment!=null){
-            val transaction = supportFragmentManager.beginTransaction()
-            transaction.remove(calendarFragment)
-            transaction.commit()
-            //dateBox.setText("")
-        }else{
+        else {
             Toast.makeText(this,"Categories Fragment not found", Toast.LENGTH_SHORT).show()
         }
 
+        if(calendarFragment != null) {
+            val transaction = supportFragmentManager.beginTransaction()
+            transaction.remove(calendarFragment)
+            transaction.commit()
+        }
+        else {
+            Toast.makeText(this,"Calendar Fragment not found", Toast.LENGTH_SHORT).show()
+        }
     }
+
     private fun showDatePickerDialog() {
-        val datePicker= DatePickerFragment({day,month, year -> onDateSelected(day,month, year)})
+        val datePicker= DatePickerFragment { day, month, year -> onDateSelected(day, month, year) }
         datePicker.show(supportFragmentManager,"Date_Picker")
     }
-    private fun onDateSelected(day: Int, month: Int, year:Int) {
-        var mo= month+1
-        //dateBox.setText("You selected day: $day.$mo.$year")
+
+    private fun onDateSelected(day: Int, month: Int, year: Int) {
+        val mo= month+1
         addCalendarFragment(day.toString().padStart(2,'0'),
             mo.toString().padStart(2,'0'),
             year.toString())
     }
-    fun addCalendarFragment(day:String, month:String, year: String){
+
+    // creates a fragment for the calendar and adds it to the container view /arvid
+    private fun addCalendarFragment(day: String, month: String, year: String) {
         val fm = supportFragmentManager.findFragmentByTag("calendar_fragment")
         val calendarFragment = CalendarFragment.newInstance(day, month, year)
         if(fm!=null){
@@ -182,7 +160,7 @@ class StatisticsActivity : AppCompatActivity() {
             transaction.remove(fm)
             transaction.commit()
         }else{
-            Toast.makeText(this,"Categories Fragment not found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this,"Calendar Fragment not found", Toast.LENGTH_SHORT).show()
         }
         val transaction = supportFragmentManager.beginTransaction()
         transaction.add(R.id.container, calendarFragment, "calendar_fragment")
@@ -190,51 +168,59 @@ class StatisticsActivity : AppCompatActivity() {
         Log.d("!!!", "calendar fragment created")
         Log.d("!!!","$day.$month.$year")
     }
-    //RV adapter acording to list needed
-    fun setAdapters(list: List<Receipt>){
+
+    //RV adapter according to list needed
+    private fun setAdapters(list: List<Receipt>) {
         val adapter=CategoryRecyclerAdapter(this,list)
         recyclerView.adapter= adapter
     }
-    fun progressBarRV(dbList:List<Receipt>){
+
+    private fun progressBarRV(dbList: List<Receipt>) {
         val barAdapter=BarRecyclerAdapter(this,dbList)
         barRecyclerView.adapter= barAdapter
     }
-    fun readFromDatabase(){
+
+    // reads all of the current user's receipts from firestore, and adds it to the list of receipts 
+    // if the category or purchase month of a receipt doesn't exist, it's created and added to their respective lists /arvid
+    private fun readFromDatabase() {
         val list= mutableListOf<Receipt>()
         val user= auth.currentUser
         if(user!=null){
             db.collection("users")
                 .document(user.uid).collection("receipts")
-                .addSnapshotListener{ snapshot, e->
-
-                    var existingCategories= mutableListOf<String>()
-                    var getMonth= mutableListOf<String>()
-                    if(snapshot!=null){
+                .addSnapshotListener{ snapshot, _ ->
+                    val existingCategories= mutableListOf<String>()
+                    val getMonth= mutableListOf<String>()
+                    if(snapshot!=null) {
                         for(document in snapshot.documents){
                             val item= document.toObject<Receipt>()
                             list.add(item!!)
 
-                            if (item.category !in existingCategories){
+                            if (item.category !in existingCategories) {
                                 existingCategories.add(item.category!!)
                             }
-                            if (item.monthNo !in getMonth){
+
+                            if (item.monthNo !in getMonth) {
                                 getMonth.add(item.monthNo!!)
                             }
                         }
-                    }       //takes a function that returns a list to set the RV
+                    }
+                    //takes a function that returns a list to set the RV
                     progressBarRV(filterByMonth(getMonth,list))
                     setAdapters(filterByCategory(existingCategories,list))
                 }
         }
     }
+
     //takes 2 lists to create a filtered list for the RV
-    fun filterByMonth(monthList:List<String>, dbList:List<Receipt>): MutableList<Receipt>{
-        var countList = mutableListOf<Receipt>()
+    private fun filterByMonth(monthList: List<String>, dbList: List<Receipt>): MutableList<Receipt> {
+        val countList = mutableListOf<Receipt>()
         val year="2022"
         for (month in monthList) {
             var total = 0
             //Creates a month
             val count = Receipt(category = month, monthNo = month)
+
             for (item in dbList) {
                 //that month of that year
                 if (item.monthNo == month && item.year==year) {
@@ -244,191 +230,31 @@ class StatisticsActivity : AppCompatActivity() {
             count.sum=total
             countList.add(count)
         }
+
         countList.sortBy { it.category?.toInt() }
         Log.d("!!!","${countList.size}")
         return countList
     }
-    fun filterByCategory(categories:List<String>, dbList:List<Receipt>):MutableList<Receipt>{
-        var countList= mutableListOf<Receipt>()
-        for (category in categories){
+
+    // filters the receipt list by category /arvid
+    private fun filterByCategory(categories: List<String>, dbList:List<Receipt>): MutableList<Receipt> {
+        val countList= mutableListOf<Receipt>()
+        for (category in categories) {
             var total=0
             var transactions=0
             val count=Receipt(category=category)
-            for (item in dbList){
-                if (item.category==category){
+            for (item in dbList) {
+                if (item.category==category) {
                     total+=item.sum!!
                     transactions++
                 }
             }
             count.sum=total
-            count.paymentmethod=""
+            count.paymentMethod=""
             count.company="$transactions transactions"
             count.fullDate=""
             countList.add(count)
         }
         return countList
     }
-    //just creates data i can use for testing
-    fun addDataTillUser(){
-        val check1 = Receipt(sum=199, company="Hem", category = "Housing", paymentmethod = "Card")
-        val check2 = Receipt(sum=1100, company="Hem", category = "Housing", paymentmethod = "Card")
-        val check3 = Receipt(sum=630, company="Hem", category = "Housing", paymentmethod = "Cash")
-
-        val check4 = Receipt(sum=980, company="Apple", category = "Electronics", paymentmethod = "Card")
-
-        val check5 = Receipt(sum=200, company="Media Markt", category = "Electronics", paymentmethod = "Cash")
-        val check6 = Receipt(sum=780, company="Microsoft", category = "Electronics", paymentmethod = "Cash")
-        val check7 = Receipt(sum=320, company="Google", category = "Electronics", paymentmethod = "Card")
-
-        val check8 = Receipt(sum=560, company="SATS", category = "Sports", paymentmethod = "Card")
-        val check9 = Receipt(sum=245, company="24Fitness", category = "Sports", paymentmethod = "Card")
-        val check10 = Receipt(sum=490, company="Nike", category = "Sports", paymentmethod = "Card")
-        val check11 = Receipt(sum=674, company="Under Armour", category = "Sports", paymentmethod = "Card")
-        val check12 = Receipt(sum=2000, company="SAS", category = "Travel", paymentmethod = "Card")
-
-        val check13 = Receipt(sum=6500, company="Iberia", category = "Travel", paymentmethod = "Card")
-
-        val check14 = Receipt(sum=678, company="AIR-tifacts", category = "Travel", paymentmethod = "Cash")
-        val check15 = Receipt(sum=5320, company="Vueling", category = "Travel", paymentmethod = "Cash")
-        val check16 = Receipt(sum=76, company="Starbucks", category = "Fika", paymentmethod = "Card")
-        val check17 = Receipt(sum=98, company="Espresso House", category = "Fika", paymentmethod = "Cash")
-
-        val check18 = Receipt(sum=350, company="Bars", category = "Fika", paymentmethod = "Card")
-        val check19 = Receipt(sum=250, company="Starbucks", category = "Fika", paymentmethod = "Card")
-        val check20 = Receipt(sum=125, company="Espresso House", category = "Fika", paymentmethod = "Cash")
-
-        val check21 = Receipt(sum=768, company="Nintendo", category = "Entertainment", paymentmethod = "Card")
-        val check22 = Receipt(sum=365, company="Fnac", category = "Entertainment", paymentmethod = "Cash")
-        val check23 = Receipt(sum=1650, company="PlayStation", category = "Entertainment", paymentmethod = "Cash")
-        /*val user= auth.currentUser
-        if (user==null){
-            return
-        }*/
-        val user= auth.currentUser ?: return //it declares user and at the same time if it's null return back, saving the steps before
-        //add one by one
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check1).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check2).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check3).addOnCompleteListener {
-                Log.d("!!!", "Receipt Added")
-            }
-
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check4).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check5).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check6).addOnCompleteListener {
-                Log.d("!!!", "Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check7).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check8).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check9).addOnCompleteListener {
-                Log.d("!!!", "Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check10).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check11).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check12).addOnCompleteListener {
-                Log.d("!!!", "Receipt Added")
-            }
-
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check13).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check14).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check15).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check16).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check17).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check18).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check19).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check20).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check21).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check22).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-        db.collection("users").document(user.uid)
-            .collection("receipts")
-            .add(check23).addOnCompleteListener {
-                Log.d("!!!","Receipt Added")
-            }
-
-    }
-
 }

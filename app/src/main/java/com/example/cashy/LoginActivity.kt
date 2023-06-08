@@ -1,18 +1,17 @@
 package com.example.cashy
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.RoundedCorner
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
-class Login : AppCompatActivity() {
+class LoginActivity : AppCompatActivity() {
 
     private lateinit var auth : FirebaseAuth
 
@@ -26,14 +25,14 @@ class Login : AppCompatActivity() {
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
             // User is signed in
-            val i = Intent(this, Overview::class.java)
+            val i = Intent(this, OverviewActivity::class.java)
             i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(i)
         }
 
         val registerText: TextView = findViewById(R.id.textView_register)
         registerText.setOnClickListener {
-            val intent = Intent(this, Register::class.java)
+            val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
         }
 
@@ -42,6 +41,8 @@ class Login : AppCompatActivity() {
             performLogin()
         }
     }
+
+    // if the user has filled in both email and password, tries to log in with firebase auth /arvid
     private fun performLogin() {
         val email : EditText = findViewById(R.id.editText_email_login)
         val password : EditText = findViewById(R.id.editText_password_login)
@@ -57,15 +58,13 @@ class Login : AppCompatActivity() {
         auth.signInWithEmailAndPassword(emailInput, passwordInput)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    val intent = Intent(this, Overview::class.java)
+                    val intent = Intent(this, OverviewActivity::class.java)
                     startActivity(intent)
 
-                    Toast.makeText(baseContext, "Success.",
-                        Toast.LENGTH_SHORT).show()
-
-                } else {
-                    Toast.makeText(baseContext, "Authentication failed.",
-                        Toast.LENGTH_SHORT).show()
+                    Toast.makeText(baseContext, "Success.", Toast.LENGTH_SHORT).show()
+                } 
+                else {
+                    Toast.makeText(baseContext, "Authentication failed.", Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener {
